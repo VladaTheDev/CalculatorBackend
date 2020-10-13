@@ -21,8 +21,12 @@ public class Controller {
     @ResponseBody
     public ResponseEntity<Resource> handleCalculateRequestAndGenerateReport(@RequestParam("expression") String expression) throws EvalError, IOException {
         Interpreter interpreter = new Interpreter();
-        interpreter.eval(expression);
-        File file = FileUtils.saveTextToFile(interpreter.get("result").toString());
+        if (expression.startsWith("=")) {
+            interpreter.eval(expression);
+        } else {
+            interpreter.eval("result=" + expression);
+        }
+        File file = FileUtils.saveTextToFile(expression + "=" + interpreter.get("result"));
         Path path = Paths.get(file.getAbsolutePath());
         ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
 
@@ -40,7 +44,6 @@ public class Controller {
         } else {
             interpreter.eval("result=" + expression);
         }
-        System.out.println(interpreter.get("result"));
         return ResponseEntity.ok(interpreter.get("result").toString());
     }
 }
